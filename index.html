@@ -44,12 +44,9 @@
         }
     </style>
 </head>
-<!-- 調整 body 為 overflow-y-auto：當 PC 視窗高度太小時，允許整頁滾動，防止按鈕或題目被強行截斷 -->
 <body class="bg-blue-100 min-h-screen w-screen flex items-center justify-center p-0 md:p-4 overflow-y-auto">
 
-    <!-- 主容器：
-         在行動裝置上高度 100% (h-screen) 確保全螢幕；
-         在 PC (md 寬度) 上高度自適應 (h-[800px])，並設定最小高度 (min-h-[700px]) 限制，防止因視窗太扁導致內容擠壓重疊 -->
+    <!-- 主容器 -->
     <div id="app-container" class="bg-white w-full max-w-2xl h-screen md:h-[800px] md:max-h-[calc(100vh-2rem)] md:min-h-[720px] md:rounded-3xl shadow-2xl overflow-hidden relative flex flex-col transition-colors duration-300 my-auto">
         
         <!-- ==================== 1. 登入/首頁畫面 ==================== -->
@@ -157,13 +154,13 @@
         <!-- ==================== 3. 遊戲畫面 ==================== -->
         <div id="screen-game" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-white">
             
-            <!-- 頂部資訊欄（倒數計時已完美融入本列，釋放大量垂直空間，徹底解決遮擋問題） -->
+            <!-- 頂部資訊欄 -->
             <div class="bg-blue-600 text-white p-3 md:p-4 flex justify-between items-center shadow-md shrink-0">
                 <!-- 左：學生資訊 -->
                 <div class="text-sm md:text-base font-bold bg-blue-800 px-3 py-1.5 rounded-lg shrink-0">
                     <i class="fa-solid fa-user"></i> <span id="display-student">2A - 15</span>
                 </div>
-                <!-- 中：倒計時（與原版相比，位置大幅優化，絕不被遮擋） -->
+                <!-- 中：倒計時 -->
                 <div class="text-lg md:text-2xl font-black text-red-200 flex items-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-clock animate-pulse"></i> 剩餘: <span id="time-text">45</span>秒
                 </div>
@@ -173,12 +170,12 @@
                 </div>
             </div>
 
-            <!-- 時間進度條（極細精簡化設計） -->
+            <!-- 時間進度條 -->
             <div class="w-full bg-gray-200 h-2 shrink-0">
                 <div id="time-bar" class="bg-red-500 h-2 w-full transition-all duration-1000 ease-linear"></div>
             </div>
 
-            <!-- 題目與答案顯示區域（設為 flex-1 自適應伸縮，限制 padding） -->
+            <!-- 題目與答案顯示區域 -->
             <div class="flex-1 flex flex-col items-center justify-center p-4 min-h-0 overflow-y-auto gap-4 md:gap-6">
                 <!-- 題目 -->
                 <div class="text-5xl sm:text-6xl md:text-7xl font-black text-gray-800 tracking-wider flex items-center gap-2 md:gap-4 select-none">
@@ -194,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- 螢幕數字鍵盤：固定高度，始終釘在底部，免受螢幕拉伸干擾 -->
+            <!-- 螢幕數字鍵盤 -->
             <div class="bg-gray-100 p-3 md:p-6 pb-6 md:pb-8 rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.05)] shrink-0">
                 <div class="grid grid-cols-3 gap-2 md:gap-4 max-w-md mx-auto">
                     <button onclick="inputNum(1)" class="bg-white text-2xl md:text-3xl font-bold py-2 md:py-3.5 rounded-xl shadow-md btn-press text-gray-800 border-b-4 border-gray-200">1</button>
@@ -214,7 +211,7 @@
                     <button onclick="deleteInput()" class="bg-yellow-100 text-yellow-600 text-lg md:text-xl font-bold py-2 md:py-3.5 rounded-xl shadow-md btn-press border-b-4 border-yellow-200"><i class="fa-solid fa-delete-left"></i></button>
                 </div>
                 
-                <!-- 提交按鈕：完美比例與間距控制，絕對不被裁切 -->
+                <!-- 提交按鈕 -->
                 <div class="max-w-md mx-auto mt-3 md:mt-4">
                     <button onclick="submitAnswer()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-black text-xl md:text-2xl py-3 md:py-4 rounded-2xl shadow-[0_6px_0_#1d4ed8] btn-press transition-all">
                         提交答案
@@ -295,6 +292,7 @@
                                 <th class="p-2 md:p-3 font-bold border-b text-center">學生身份</th>
                                 <th class="p-2 md:p-3 font-bold border-b text-center">答對題數</th>
                                 <th class="p-2 md:p-3 font-bold border-b text-center">完成時間</th>
+                                <th class="p-2 md:p-3 font-bold border-b text-center w-12">管理</th>
                             </tr>
                         </thead>
                         <tbody id="records-table-body" class="text-xs md:text-sm">
@@ -320,12 +318,31 @@
 
     </div>
 
+    <!-- ==================== 自訂對話框 (替代 alert 和 confirm 避免瀏覽器沙盒限制而卡死) ==================== -->
+    <div id="custom-dialog" class="hidden absolute inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative text-center">
+            <div id="dialog-icon" class="text-5xl mb-3 text-orange-500">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h3 id="dialog-title" class="text-2xl font-black text-gray-800 mb-2">提示</h3>
+            <p id="dialog-message" class="text-gray-600 font-bold text-sm mb-6">對話框內容</p>
+            
+            <div class="flex gap-3 justify-center">
+                <button id="dialog-cancel-btn" onclick="closeCustomDialog(false)" class="bg-gray-200 text-gray-700 font-bold px-6 py-2.5 rounded-xl btn-press text-sm">
+                    取消
+                </button>
+                <button id="dialog-confirm-btn" onclick="closeCustomDialog(true)" class="bg-blue-500 text-white font-bold px-8 py-2.5 rounded-xl btn-press text-sm shadow-[0_4px_0_#1d4ed8]">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Turso 數據庫連接配置 ---
         const TURSO_URL = "libsql://p3-math-yam2.aws-ap-northeast-1.turso.io";
         const TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk2OTQwMjAsImlkIjoiMDE5ZDk1MWUtZTgwMS03ZjU1LTg5OWUtZDI1YTVhNzY4MjU2IiwicmlkIjoiMmFlOTU2YTUtZTYxZi00Y2U0LTkxYTYtNmE3Mjg2NTc4ZDFkIn0.GiuVceCb8FLdMm8Ax3u6DXDh-0r-a-oeZFJU4nk49XX9K6d0SB859wdDnK-duai7wr701BeX4fyOdh9Vw09ZCA";
         
-        // 將 libsql:// 轉為 https:// 格式以便進行 HTTP API 呼叫
         const TURSO_HTTP_URL = TURSO_URL.replace("libsql://", "https://");
 
         // --- 狀態變數 ---
@@ -355,7 +372,6 @@
         
         // --- 頁面初始設定 ---
         window.onload = function() {
-            // 初始化數據庫表格
             initDatabaseTable();
         };
 
@@ -369,6 +385,47 @@
 
         function goHome() {
             showScreen('login');
+        }
+
+        // --- 自訂對話框 Promise 系統 (取代阻斷性高的原生 alert / confirm) ---
+        let dialogResolve = null;
+
+        function showCustomAlert(message, title = "提示", iconClass = "fa-circle-info", iconColorClass = "text-blue-500") {
+            document.getElementById('dialog-icon').innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            document.getElementById('dialog-icon').className = `text-5xl mb-3 ${iconColorClass}`;
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            
+            document.getElementById('dialog-cancel-btn').classList.add('hidden');
+            document.getElementById('dialog-confirm-btn').className = "bg-blue-500 text-white font-bold px-8 py-2.5 rounded-xl btn-press text-sm shadow-[0_4px_0_#1d4ed8]";
+            document.getElementById('custom-dialog').classList.remove('hidden');
+            
+            return new Promise((resolve) => {
+                dialogResolve = resolve;
+            });
+        }
+
+        function showCustomConfirm(message, title = "請確認", iconClass = "fa-triangle-exclamation", iconColorClass = "text-red-500") {
+            document.getElementById('dialog-icon').innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            document.getElementById('dialog-icon').className = `text-5xl mb-3 ${iconColorClass}`;
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            
+            document.getElementById('dialog-cancel-btn').classList.remove('hidden');
+            document.getElementById('dialog-confirm-btn').className = "bg-red-500 text-white font-bold px-8 py-2.5 rounded-xl btn-press text-sm shadow-[0_4px_0_#b91c1c]";
+            document.getElementById('custom-dialog').classList.remove('hidden');
+            
+            return new Promise((resolve) => {
+                dialogResolve = resolve;
+            });
+        }
+
+        function closeCustomDialog(result) {
+            document.getElementById('custom-dialog').classList.add('hidden');
+            if (dialogResolve) {
+                dialogResolve(result);
+                dialogResolve = null;
+            }
         }
 
         // --- Turso HTTP API 核心請求封裝 ---
@@ -393,6 +450,15 @@
                 }
 
                 const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    for (let res of data.results) {
+                        if (res.type === "error") {
+                            throw new Error(res.error.message || "資料庫執行語法錯誤");
+                        }
+                    }
+                }
+                
                 return data.results;
             } catch (error) {
                 console.error("Turso 連接失敗:", error);
@@ -420,12 +486,12 @@
         }
 
         // --- 遊戲邏輯 ---
-        function startGame() {
+        async function startGame() {
             studentClass = document.getElementById('input-class').value;
             studentId = document.getElementById('input-id').value;
 
             if (!studentClass || !studentId) {
-                alert("請先選擇班別和學號！");
+                await showCustomAlert("請先選擇班別和學號！", "提示", "fa-circle-exclamation", "text-orange-500");
                 return;
             }
 
@@ -500,9 +566,10 @@
         }
 
         function updateAnswerBox() {
-            answerBox.innerText = currentAnswer;
+            const ab = document.getElementById('answer-box');
+            ab.innerText = currentAnswer;
             if(currentAnswer === "") {
-                answerBox.innerHTML = "&nbsp;"; 
+                ab.innerHTML = "&nbsp;"; 
             }
         }
 
@@ -522,12 +589,13 @@
                 
                 generateQuestion();
             } else {
-                answerBox.classList.add('shake', 'text-red-500', 'border-red-500');
-                answerBox.classList.remove('text-blue-600');
+                const ab = document.getElementById('answer-box');
+                ab.classList.add('shake', 'text-red-500');
+                ab.classList.remove('text-blue-600');
                 
                 setTimeout(() => {
-                    answerBox.classList.remove('shake', 'text-red-500', 'border-red-500');
-                    answerBox.classList.add('text-blue-600');
+                    ab.classList.remove('shake', 'text-red-500');
+                    ab.classList.add('text-blue-600');
                     clearInput();
                 }, 400);
             }
@@ -542,7 +610,6 @@
             
             showScreen('result');
             
-            // 執行數據庫寫入
             uploadScoreToTurso(studentClass, parseInt(studentId), score);
         }
 
@@ -597,19 +664,19 @@
             if (e.key === 'Enter') verifyAdminPassword();
         });
 
-        // --- 從 Turso 下載所有紀錄 ---
+        // --- 從 Turso 下載所有紀錄 (100% 容錯與唯一識別碼強制抓取) ---
         async function fetchRecordsFromTurso() {
             showScreen('records');
             const tbody = document.getElementById('records-table-body');
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="p-8 text-center text-gray-500 font-bold">
+                    <td colspan="5" class="p-8 text-center text-gray-500 font-bold">
                         <i class="fa-solid fa-spinner animate-spin mr-2"></i> 正在載入雲端數據...
                     </td>
                 </tr>
             `;
 
-            const selectSql = `SELECT class_name, student_id, score, created_at FROM multiplication_contest;`;
+            const selectSql = `SELECT rowid AS id, class_name, student_id, score, created_at FROM multiplication_contest;`;
             try {
                 const results = await executeTursoQuery([selectSql]);
                 cachedRecords = [];
@@ -617,20 +684,38 @@
                 if (results && results[0]) {
                     const resultObj = results[0];
                     
-                    if (resultObj.active && resultObj.response && resultObj.response.rows) {
-                        const rows = resultObj.response.rows;
-                        const cols = resultObj.response.cols;
+                    if (resultObj.type === "ok" && resultObj.response && resultObj.response.result) {
+                        const resultData = resultObj.response.result;
+                        const rows = resultData.rows || [];
+                        const cols = resultData.cols || [];
 
                         cachedRecords = rows.map(row => {
                             let record = {};
-                            row.forEach((val, i) => {
-                                const colName = cols[i].name;
-                                if (val !== null && typeof val === 'object' && 'value' in val) {
-                                    record[colName] = val.value;
+                            
+                            // A. 優先強制鎖定第 1 個欄位當作唯一識別碼 id (解決任何別名丟失問題)
+                            let idVal = null;
+                            if (row[0] !== undefined && row[0] !== null) {
+                                idVal = (typeof row[0] === 'object' && 'value' in row[0]) ? row[0].value : row[0];
+                            }
+                            record.id = idVal;
+
+                            row.forEach((colVal, i) => {
+                                const colName = cols[i] ? cols[i].name : `col_${i}`;
+                                let val = null;
+                                if (colVal !== null && typeof colVal === 'object') {
+                                    if ('value' in colVal) {
+                                        val = colVal.value;
+                                    } else if (colVal.type === 'null') {
+                                        val = null;
+                                    } else {
+                                        val = JSON.stringify(colVal);
+                                    }
                                 } else {
-                                    record[colName] = val;
+                                    val = colVal;
                                 }
+                                record[colName] = val;
                             });
+
                             return record;
                         });
                     } 
@@ -640,33 +725,97 @@
                         cachedRecords = rows.map(row => {
                             let record = {};
                             if (Array.isArray(row)) {
-                                row.forEach((val, i) => {
+                                let idVal = null;
+                                if (row[0] !== undefined && row[0] !== null) {
+                                    idVal = (typeof row[0] === 'object' && 'value' in row[0]) ? row[0].value : row[0];
+                                }
+                                record.id = idVal;
+
+                                row.forEach((colVal, i) => {
                                     const colName = cols[i] || `col_${i}`;
-                                    record[colName] = (val !== null && typeof val === 'object' && 'value' in val) ? val.value : val;
+                                    record[colName] = (colVal !== null && typeof colVal === 'object' && 'value' in colVal) ? colVal.value : colVal;
                                 });
-                            } else {
-                                record = row;
+                            } else if (row && typeof row === 'object') {
+                                record = { ...row };
+                                for (let key in row) {
+                                    const keyLower = key.toLowerCase();
+                                    if (keyLower === 'id' || keyLower === 'rowid' || keyLower.includes('id')) {
+                                        record.id = row[key];
+                                        break;
+                                    }
+                                }
                             }
                             return record;
                         });
                     }
                     else if (Array.isArray(resultObj.rows)) {
-                        cachedRecords = resultObj.rows;
+                        cachedRecords = resultObj.rows.map(row => {
+                            let record = {};
+                            if (Array.isArray(row)) {
+                                let idVal = null;
+                                if (row[0] !== undefined && row[0] !== null) {
+                                    idVal = (typeof row[0] === 'object' && 'value' in row[0]) ? row[0].value : row[0];
+                                }
+                                record.id = idVal;
+
+                                row.forEach((val, i) => {
+                                    record[`col_${i}`] = (val !== null && typeof val === 'object' && 'value' in val) ? val.value : val;
+                                });
+                            } else if (row && typeof row === 'object') {
+                                record = { ...row };
+                                for (let key in row) {
+                                    const keyLower = key.toLowerCase();
+                                    if (keyLower === 'id' || keyLower === 'rowid' || keyLower.includes('id')) {
+                                        record.id = row[key];
+                                        break;
+                                    }
+                                }
+                            }
+                            return record;
+                        });
                     }
                 }
 
-                console.log("解析後的雲端數據：", cachedRecords);
+                console.log("Turso 雲端載入數據解析成功：", cachedRecords);
                 renderRecordsList();
 
             } catch (err) {
-                console.error("載入排名失敗:", err);
+                console.error("雲端數據加載出錯:", err);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="p-8 text-center text-red-500 font-bold">
+                        <td colspan="5" class="p-8 text-center text-red-500 font-bold">
                             <i class="fa-solid fa-circle-exclamation mr-2"></i> 載入失敗，請檢查網路連線。
                         </td>
                     </tr>
                 `;
+            }
+        }
+
+        // --- 刪除個別紀錄功能 (使用 rowid 作為安全唯一的篩選鍵進行刪除) ---
+        async function deleteSingleRecord(id) {
+            if (id === undefined || id === null || id === 'null' || id === 'undefined') {
+                await showCustomAlert("無法獲取該條紀錄的唯一識別碼！", "錯誤", "fa-circle-xmark", "text-red-500");
+                return;
+            }
+
+            const confirmDelete = await showCustomConfirm("確定要永久刪除這筆學生成績紀錄嗎？此操作無法還原。");
+            if (!confirmDelete) return;
+
+            const cleanId = parseInt(id);
+            if (isNaN(cleanId)) {
+                await showCustomAlert("無效的紀錄識別碼！", "錯誤", "fa-circle-xmark", "text-red-500");
+                return;
+            }
+
+            // 使用 rowid 作為刪除條件，100% 避開任何 explicit column 不存在的問題
+            const deleteSql = `DELETE FROM multiplication_contest WHERE rowid = ${cleanId};`;
+            try {
+                await executeTursoQuery([deleteSql]);
+                await showCustomAlert("該筆紀錄已成功刪除！", "成功", "fa-circle-check", "text-green-500");
+                fetchRecordsFromTurso();
+            } catch (err) {
+                console.error("刪除單筆紀錄失敗:", err);
+                await showCustomAlert("刪除失敗，錯誤原因：" + err.message, "錯誤", "fa-circle-xmark", "text-red-500");
             }
         }
 
@@ -737,6 +886,8 @@
 
                 const scoreHighlight = parseInt(row.score) >= 15 ? 'text-green-600 font-black' : 'text-gray-800 font-bold';
 
+                const targetId = (row.id !== undefined && row.id !== null) ? row.id : null;
+
                 const tr = document.createElement('tr');
                 tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
                 tr.innerHTML = `
@@ -744,6 +895,11 @@
                     <td class="p-3 border-b text-center font-extrabold text-gray-800">${row.class_name} - ${row.student_id}號</td>
                     <td class="p-3 border-b text-center text-lg ${scoreHighlight}">${row.score} 題</td>
                     <td class="p-3 border-b text-center text-xs text-gray-400 font-semibold">${localTimeStr}</td>
+                    <td class="p-3 border-b text-center">
+                        <button onclick="deleteSingleRecord('${targetId}')" class="text-red-500 hover:text-red-700 btn-press p-1" title="刪除此紀錄">
+                            <i class="fa-solid fa-trash-can text-sm md:text-base"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -751,18 +907,16 @@
 
         // --- 清空資料庫全部記錄 ---
         async function clearRecordsConfirm() {
-            const verifyText = prompt("注意！這會永久刪除雲端資料庫中的所有學生成績記錄！\n\n如果確定，請在下方輸入： DELETE");
-            if (verifyText === "DELETE" || verifyText === "delete") {
-                const deleteSql = `DELETE FROM multiplication_contest;`;
-                try {
-                    await executeTursoQuery([deleteSql]);
-                    alert("資料庫已成功清空！");
-                    fetchRecordsFromTurso();
-                } catch (err) {
-                    alert("刪除失敗，請檢查網絡連線或權限設定！");
-                }
-            } else if (verifyText !== null) {
-                alert("輸入錯誤，取消操作。");
+            const confirmClear = await showCustomConfirm("警告！確定要永久刪除雲端資料庫中「所有」學生競賽成績記錄嗎？此操作完全無法恢復！", "重大安全警告", "fa-triangle-exclamation", "text-red-600");
+            if (!confirmClear) return;
+
+            const deleteSql = `DELETE FROM multiplication_contest;`;
+            try {
+                await executeTursoQuery([deleteSql]);
+                await showCustomAlert("雲端資料庫已成功清空所有參賽數據！", "清空完成", "fa-circle-check", "text-green-500");
+                fetchRecordsFromTurso();
+            } catch (err) {
+                await showCustomAlert("清除資料庫失敗，錯誤原因：" + err.message, "錯誤", "fa-circle-xmark", "text-red-500");
             }
         }
 
