@@ -44,10 +44,11 @@
         }
     </style>
 </head>
-<body class="bg-blue-100 h-screen w-screen flex items-center justify-center p-4 md:p-8">
+<!-- 更改 body 為 min-h-screen 及 overflow-y-auto，允許在小螢幕 PC 上進行網頁捲動 -->
+<body class="bg-blue-100 min-h-screen flex items-center justify-center py-6 px-4 overflow-y-auto">
 
-    <!-- 主容器 -->
-    <div id="app-container" class="bg-white w-full max-w-2xl h-full max-h-[850px] rounded-3xl shadow-2xl overflow-hidden relative flex flex-col transition-colors duration-300">
+    <!-- 主容器：使用固定高度 h-[800px] 配合 my-auto，在 PC 視窗不夠高時會自動觸發 body 的滾動條，在大螢幕和 iPad 上則會完美置中 -->
+    <div id="app-container" class="bg-white w-full max-w-2xl h-[800px] rounded-3xl shadow-2xl overflow-hidden relative flex flex-col transition-colors duration-300 my-auto">
         
         <!-- ==================== 1. 登入/首頁畫面 ==================== -->
         <div id="screen-login" class="flex-1 flex flex-col items-center justify-center p-8">
@@ -188,7 +189,7 @@
                 </div>
             </div>
 
-            <!-- 螢幕數字鍵盤 (針對 iPad 觸控優化) -->
+            <!-- 螢幕數字鍵盤 (針對 iPad 與 PC 觸控優化) -->
             <div class="bg-gray-100 p-4 md:p-6 pb-8 rounded-t-3xl shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
                 <div class="grid grid-cols-3 gap-3 md:gap-4 max-w-md mx-auto">
                     <button onclick="inputNum(1)" class="bg-white text-3xl font-bold py-4 rounded-xl shadow-md btn-press text-gray-800 border-b-4 border-gray-200">1</button>
@@ -550,7 +551,6 @@
             statusDiv.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在上傳至雲端數據庫...`;
             statusDiv.className = "mb-6 flex items-center justify-center gap-2 text-sm font-bold text-blue-500";
 
-            // 在 2026-05-25 的背景下獲取當前時間格式
             const timestamp = new Date().toISOString();
             const insertSql = `
                 INSERT INTO multiplication_contest (class_name, student_id, score, created_at)
@@ -566,7 +566,6 @@
                 statusDiv.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500"></i> 上傳失敗！暫存於本機。`;
                 statusDiv.className = "mb-6 flex items-center justify-center gap-2 text-sm font-bold text-red-600";
                 
-                // 本機備份儲存 (以防萬一斷網)
                 let localBackups = JSON.parse(localStorage.getItem('turso_backups')) || [];
                 localBackups.push({ class_name: cls, student_id: id, score: scr, created_at: timestamp });
                 localStorage.setItem('turso_backups', JSON.stringify(localBackups));
@@ -588,13 +587,12 @@
             const pwdInput = document.getElementById('admin-pwd-input').value;
             if (pwdInput === "admin1234") {
                 closePasswordModal();
-                fetchRecordsFromTurso(); // 通過驗證後下載數據
+                fetchRecordsFromTurso();
             } else {
                 document.getElementById('pwd-error-msg').classList.remove('hidden');
             }
         }
 
-        // 支援管理員密碼輸入框按 Enter 鍵確認
         document.getElementById('admin-pwd-input')?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') verifyAdminPassword();
         });
@@ -620,11 +618,9 @@
                     const rows = resultObj.response.rows;
                     const cols = resultObj.response.cols;
 
-                    // 將 rows 陣列轉成好處理的物件格式
                     cachedRecords = rows.map(row => {
                         let record = {};
                         row.forEach((val, i) => {
-                            // 獲取欄位名，根據格式進行轉換
                             const colName = cols[i].name;
                             record[colName] = val.value !== undefined ? val.value : val;
                         });
@@ -655,15 +651,12 @@
             const filterClass = document.getElementById('filter-class').value;
             const sortBy = document.getElementById('sort-by').value;
 
-            // 1. 篩選數據
             let displayData = [...cachedRecords];
             if (filterClass !== "ALL") {
                 displayData = displayData.filter(item => item.class_name === filterClass);
             }
 
-            // 2. 排序數據
             if (sortBy === "score_desc") {
-                // 先按分數排，分數相同再按時間排序（先達成的在前）
                 displayData.sort((a, b) => {
                     const scoreA = parseInt(a.score);
                     const scoreB = parseInt(b.score);
@@ -678,7 +671,6 @@
                 displayData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
             }
 
-            // 3. 渲染至畫面上
             tbody.innerHTML = '';
             
             if (displayData.length === 0) {
@@ -688,12 +680,10 @@
             noRecordsMsg.classList.add('hidden');
 
             displayData.forEach((row, index) => {
-                // 本地時區轉換
                 const utcDate = new Date(row.created_at);
                 const localTimeStr = isNaN(utcDate.getTime()) ? '未知時間' : 
                     `${utcDate.getMonth() + 1}/${utcDate.getDate()} ${utcDate.getHours().toString().padStart(2, '0')}:${utcDate.getMinutes().toString().padStart(2, '0')}`;
 
-                // 排名標章與文字特效
                 let rankMarkup = `${index + 1}`;
                 if (sortBy === "score_desc") {
                     if (index === 0) rankMarkup = `<span class="bg-yellow-400 text-white rounded-full w-7 h-7 inline-flex items-center justify-center font-black shadow-sm"><i class="fa-solid fa-trophy text-xs"></i></span>`;
@@ -723,7 +713,7 @@
                 try {
                     await executeTursoQuery([deleteSql]);
                     alert("資料庫已成功清空！");
-                    fetchRecordsFromTurso(); // 重新整理清單
+                    fetchRecordsFromTurso();
                 } catch (err) {
                     alert("刪除失敗，請檢查網絡連線或權限設定！");
                 }
@@ -734,7 +724,7 @@
 
         // --- 實體鍵盤支援 ---
         document.addEventListener('keydown', (e) => {
-            if (screens.game.classList.contains('hidden')) return; // 只在遊戲中有效
+            if (screens.game.classList.contains('hidden')) return;
             
             if (e.key >= '0' && e.key <= '9') {
                 inputNum(parseInt(e.key));
